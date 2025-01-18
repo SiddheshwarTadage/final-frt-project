@@ -5,17 +5,22 @@ phases:
     commands:
       - echo Logging in to ECR...
       - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 767397870266.dkr.ecr.ap-south-1.amazonaws.com
-      - REPOSITORY_URI=767397870266.dkr.ecr.ap-south-1.amazonaws.com/final-frt-project
-
+      -  REPOSITORY_URI=767397870266.dkr.ecr.ap-south-1.amazonaws.com/final-frt-project
   build:
     commands:
-      - echo Build started on date
+      - echo Build started on `date`
       - echo Building the Docker image...
       - docker build -t final-frt-project .
       - docker tag final-frt-project:latest 767397870266.dkr.ecr.ap-south-1.amazonaws.com/final-frt-project:latest
 
   post_build:
     commands:
-      - echo Build completed on date
+      - echo Build completed on `date`
       - echo Pushing the Docker image...
-      - docker push 767397870266.dkr.ecr.ap-south-1.amazonaws.com/final-frt-project:latest
+      - docker push $REPOSITORY_URI:latest
+      - echo Writing image definitions file...
+      - printf '[{"name":"web-hosting","imageUri":"%s"}]' "$REPOSITORY_URI:latest" > imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json
